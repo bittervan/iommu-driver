@@ -5091,6 +5091,8 @@ static void nvme_free_ctrl(struct device *dev)
 		nvme_put_subsystem(subsys);
 }
 
+extern struct dma_map_ops riscv_iommu_dma_map_ops;
+
 /*
  * Initialize a NVMe controller structures.  This needs to be called during
  * earliest initialization so that we have the initialized structured around
@@ -5109,6 +5111,9 @@ int nvme_init_ctrl(struct nvme_ctrl *ctrl, struct device *dev,
 	xa_init(&ctrl->cels);
 	init_rwsem(&ctrl->namespaces_rwsem);
 	ctrl->dev = dev;
+
+	// mount the iommu operation
+	dev->dma_ops = &riscv_iommu_dma_map_ops;
 	ctrl->ops = ops;
 	ctrl->quirks = quirks;
 	ctrl->numa_node = NUMA_NO_NODE;

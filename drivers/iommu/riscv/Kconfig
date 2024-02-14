@@ -1,0 +1,7 @@
+config RISCV_IOMMU
+    bool "RISC-V IOMMU support"
+    depends on RISCV
+    select IOMMU_DMA
+    select IOMMU_API
+    help
+      This enables support for the RISC-V IOMMU.

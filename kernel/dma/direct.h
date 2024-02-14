@@ -88,6 +88,9 @@ static inline dma_addr_t dma_direct_map_page(struct device *dev,
 	phys_addr_t phys = page_to_phys(page) + offset;
 	dma_addr_t dma_addr = phys_to_dma(dev, phys);
 
+	if (strcmp(dev_name(dev), "60000000.mmc0"))
+		panic("in dma_direct_map_page, device: %s", dev_name(dev));
+
 	if (is_swiotlb_force_bounce(dev)) {
 		if (is_pci_p2pdma_page(page))
 			return DMA_MAPPING_ERROR;
@@ -115,6 +118,9 @@ static inline void dma_direct_unmap_page(struct device *dev, dma_addr_t addr,
 		size_t size, enum dma_data_direction dir, unsigned long attrs)
 {
 	phys_addr_t phys = dma_to_phys(dev, addr);
+
+	if (strcmp(dev_name(dev), "60000000.mmc0"))
+		panic("in dma_direct_unmap_page, device: %s", dev_name(dev));
 
 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
 		dma_direct_sync_single_for_cpu(dev, addr, size, dir);
