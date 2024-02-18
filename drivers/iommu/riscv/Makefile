@@ -1,1 +1,1 @@
-obj-$(CONFIG_RISCV_IOMMU) += iommu.o
+obj-$(CONFIG_RISCV_IOMMU) += iommu.o mapping.o

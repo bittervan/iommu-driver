@@ -1,7 +1,43 @@
 #include "utils.h"
+#include "defs.h"
 
+static const uint64_t IOMMU_PHYS_ADDR = 0x60020000;
+
+__attribute__((aligned(4096))) uint64_t riscv_iommu_pgt[4096 / sizeof(uint64_t)];
+__attribute__((aligned(4096))) static struct riscv_iommu_cd riscv_iommu_dct[4096 / sizeof(struct riscv_iommu_cd)]; // context descriptor table
+
+volatile struct riscv_iommu_mmio *mmio_ctrl;
+
+// This implementation ignores the capability register, only use the sv39 format for the IOMMU.
+// Initialize the IOMMU with the sv39 format.
+// The queues are not used, we use a dedicated register to flush the iotlb to ensure best performance.
+// The PCIe device is put to the fisrt context position, since the PCIe IP in vivado removes the device ID, and we only use one device.
 static int __init riscv_iommu_init(void) {
+    uint64_t ddtp = 0;
+    uint64_t phys_dct;
+    uint64_t phys_pgt;
+    
     printk("riscv_iommu_init\n");
+
+    mmio_ctrl = (struct riscv_iommu_mmio *)ioremap(IOMMU_PHYS_ADDR, sizeof(struct riscv_iommu_mmio));
+    ddtp |= DDTP_IOMMU_MODE_1LVL; // 1-level directory table
+    phys_dct = virt_to_phys(riscv_iommu_dct); // get the physical address of the mmio_ctrl
+    ddtp |= (phys_dct >> 12) << 10; // set the physical address of the mmio_ctrl
+
+    printk("mmio_ctrl->ddtpl: %08x\n", readl(&mmio_ctrl->ddtpl));
+    printk("mmio_ctrl->ddtph: %08x\n", readl(&mmio_ctrl->ddtph));
+    printk("mmio_ctrl->flush: %08x\n", readl(&mmio_ctrl->flush));
+    writel((uint32_t)((uint64_t)ddtp >> 32), &mmio_ctrl->ddtph);
+    writel((uint32_t)((uint64_t)ddtp & 0xffffffff), &mmio_ctrl->ddtpl);
+    writel(1, &mmio_ctrl->flush);
+    printk("mmio_ctrl->ddtpl: %08x\n", readl(&mmio_ctrl->ddtpl));
+    printk("mmio_ctrl->ddtph: %08x\n", readl(&mmio_ctrl->ddtph));
+    printk("mmio_ctrl->flush: %08x\n", readl(&mmio_ctrl->flush));
+
+    riscv_iommu_dct[0].fsc = 0;
+    riscv_iommu_dct[0].fsc |= FSC_IOMMU_MODE_SV39 << 60;
+    phys_pgt = virt_to_phys(riscv_iommu_pgt);
+    riscv_iommu_dct[0].fsc |= phys_pgt >> 12;
     return 0;
 }
 
