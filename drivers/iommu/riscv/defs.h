@@ -63,6 +63,10 @@ static const uint64_t FSC_IOMMU_MODE_SV39 = 8;
 static const uint64_t FSC_IOMMU_MODE_SV48 = 9;
 static const uint64_t FSC_IOMMU_MODE_SV57 = 10;
 
+static const uint64_t RISCV_IOMMU_OFFSET = 0xab00000000;
+static const uint64_t RISCV_IOMMU_PA_START = 0x80000000;
+static const uint64_t RISCV_IOMMU_PA_SIZE  = 0x40000000;
+
 typedef uint64_t* pagetable_t;
 
 #endif

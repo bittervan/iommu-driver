@@ -39,7 +39,7 @@ static int __init riscv_iommu_init(void) {
     phys_pgt = virt_to_phys(riscv_iommu_pgt);
     riscv_iommu_dct[0].fsc |= phys_pgt >> 12;
 
-	riscv_iommu_create_mapping(riscv_iommu_pgt, 0x80000000, 0x80000000, 0x40000000, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
+	riscv_iommu_create_mapping(riscv_iommu_pgt, RISCV_IOMMU_PA_START + RISCV_IOMMU_OFFSET, RISCV_IOMMU_PA_START, RISCV_IOMMU_PA_SIZE, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U); // This creates a mapping for the PCIe device, this is necessary for large buffers > 500K, otherwise the absence of cache flush instruction will cause address translation using outdated PTEs, instead of the new PTEs.
     return 0;
 }
 
@@ -101,12 +101,14 @@ void riscv_iommu_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
 
 dma_addr_t riscv_iommu_map_resource(struct device *dev, phys_addr_t phys_addr, size_t size, enum dma_data_direction dir, unsigned long attrs) {
     // printk("riscv_iommu_map_sg\n");
-    return iommu_direct_map_resource(dev, phys_addr, size, dir, attrs);
+    panic("riscv_iommu_map_resource not implemented\n");
+    // return iommu_direct_map_resource(dev, phys_addr, size, dir, attrs);
 }
 
 void riscv_iommu_unmap_resource(struct device *dev, dma_addr_t handle, size_t size, enum dma_data_direction dir, unsigned long attrs) {
     // printk("riscv_iommu_unmap_resource\n");
-    iommu_direct_unmap_resource(dev, handle, size, dir, attrs);
+    panic("riscv_iommu_unmap_resource not implemented\n");
+    // iommu_direct_unmap_resource(dev, handle, size, dir, attrs);
 }
 
 void riscv_iommu_sync_single_for_cpu(struct device *dev, dma_addr_t handle, size_t size, enum dma_data_direction dir) {

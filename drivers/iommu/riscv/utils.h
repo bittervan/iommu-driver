@@ -15,30 +15,38 @@ static inline void* iommu_direct_alloc(struct device *dev, size_t size, dma_addr
         gfp_t gfp, unsigned long attrs)
 {
     void* ret = dma_direct_alloc(dev, size, dma_handle, gfp, attrs);
-	riscv_iommu_create_mapping(riscv_iommu_pgt, *dma_handle, *dma_handle, size, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
+	uint64_t paddr = (uint64_t)*dma_handle;
+
+	*dma_handle = paddr + RISCV_IOMMU_OFFSET; // forming iova
+	riscv_iommu_create_mapping(riscv_iommu_pgt, *dma_handle, paddr, size, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
 	return ret;
 }
 
 static inline void iommu_direct_free(struct device *dev, size_t size, void *vaddr,
 		dma_addr_t dma_handle, unsigned long attrs)
 {
+	uint64_t paddr = (uint64_t)dma_handle - RISCV_IOMMU_OFFSET;
 	riscv_iommu_remove_mapping(riscv_iommu_pgt, dma_handle, size);
-	dma_direct_free(dev, size, vaddr, dma_handle, attrs);
+	dma_direct_free(dev, size, vaddr, paddr, attrs);
 }
 
 static inline struct page* iommu_direct_alloc_pages(struct device *dev, size_t size,
 		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
 {
 	struct page* ret = dma_direct_alloc_pages(dev, size, dma_handle, gfp, attrs);
-	riscv_iommu_create_mapping(riscv_iommu_pgt, *dma_handle, *dma_handle, size, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
+	uint64_t paddr = (uint64_t)*dma_handle;
+	*dma_handle = paddr + RISCV_IOMMU_OFFSET; // forming iova
+
+	riscv_iommu_create_mapping(riscv_iommu_pgt, *dma_handle, paddr, size, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
 	return ret;
 }
 
 static inline void iommu_direct_free_pages(struct device *dev, size_t size,
 		struct page *page, dma_addr_t dma_handle, unsigned long attrs)
 {
+	uint64_t paddr = (uint64_t)dma_handle - RISCV_IOMMU_OFFSET;
 	riscv_iommu_remove_mapping(riscv_iommu_pgt, dma_handle, size);
-	dma_direct_free_pages(dev, size, page, dma_handle, attrs);
+	dma_direct_free_pages(dev, size, page, paddr, attrs);
 }
 
 static inline dma_addr_t iommu_direct_map_page(struct device *dev,
@@ -46,9 +54,9 @@ static inline dma_addr_t iommu_direct_map_page(struct device *dev,
 		enum dma_data_direction dir, unsigned long attrs)
 {
 	phys_addr_t phys = page_to_phys(page) + offset;
-	dma_addr_t dma_addr = phys_to_dma(dev, phys);
+	dma_addr_t dma_addr = phys + RISCV_IOMMU_OFFSET;
 
-	riscv_iommu_create_mapping(riscv_iommu_pgt, dma_addr, dma_addr, size, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
+	riscv_iommu_create_mapping(riscv_iommu_pgt, dma_addr, phys, size, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
 
 	if (is_swiotlb_force_bounce(dev)) {
 		if (is_pci_p2pdma_page(page))
@@ -105,7 +113,8 @@ static inline void dma_direct_sync_single_for_cpu(struct device *dev,
 static inline void iommu_direct_unmap_page(struct device *dev, dma_addr_t addr,
 		size_t size, enum dma_data_direction dir, unsigned long attrs)
 {
-	phys_addr_t phys = dma_to_phys(dev, addr);
+	// phys_addr_t phys = dma_to_phys(dev, addr);
+	phys_addr_t phys = addr - RISCV_IOMMU_OFFSET;
 
 	riscv_iommu_remove_mapping(riscv_iommu_pgt, addr, size);
 
