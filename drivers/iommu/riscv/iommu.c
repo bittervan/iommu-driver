@@ -39,7 +39,8 @@ static int __init riscv_iommu_init(void) {
     phys_pgt = virt_to_phys(riscv_iommu_pgt);
     riscv_iommu_dct[0].fsc |= phys_pgt >> 12;
 
-	riscv_iommu_create_mapping(riscv_iommu_pgt, RISCV_IOMMU_PA_START + RISCV_IOMMU_OFFSET, RISCV_IOMMU_PA_START, RISCV_IOMMU_PA_SIZE, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U); // This creates a mapping for the PCIe device, this is necessary for large buffers > 500K, otherwise the absence of cache flush instruction will cause address translation using outdated PTEs, instead of the new PTEs.
+    /* no longer required, using coherent dmas */
+	// riscv_iommu_create_mapping(riscv_iommu_pgt, RISCV_IOMMU_PA_START + RISCV_IOMMU_OFFSET, RISCV_IOMMU_PA_START, RISCV_IOMMU_PA_SIZE, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U); // This creates a mapping for the PCIe device, this is necessary for large buffers > 500K, otherwise the absence of cache flush instruction will cause address translation using outdated PTEs, instead of the new PTEs.
     return 0;
 }
 

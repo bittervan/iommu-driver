@@ -28,7 +28,7 @@ void riscv_iommu_create_mapping(uint64_t *pgtbl, uint64_t va, uint64_t pa, uint6
 
         // printk("before accessing pgtbl, pgtbl: %016llx, index1: %lld\n", (uint64_t)pgtbl, index1);
         if (pgtbl[index1] == 0) {
-            uint64_t next_pgtbl = (uint64_t)page_to_virt(alloc_page(GFP_KERNEL));
+            uint64_t next_pgtbl = (uint64_t)page_to_virt(alloc_page(GFP_KERNEL | __GFP_ZERO));
             // printk("new allocated next_pgtbl: %016llx\n", next_pgtbl);
             pgtbl[index1] = PA_PPN(virt_to_phys((void*)next_pgtbl)) << 10 | PTE_V;
         }
@@ -37,7 +37,7 @@ void riscv_iommu_create_mapping(uint64_t *pgtbl, uint64_t va, uint64_t pa, uint6
         l2_pgtbl = (uint64_t *)phys_to_virt(PTE_PPN(l1_entry) << 12);
         // printk("before accessing l2_pgtbl, l2_pgtbl: %016llx, index2: %lld\n", (uint64_t)l2_pgtbl, index2);
         if (l2_pgtbl[index2] == 0) {
-            uint64_t next_pgtbl = (uint64_t)page_to_virt(alloc_page(GFP_KERNEL));
+            uint64_t next_pgtbl = (uint64_t)page_to_virt(alloc_page(GFP_KERNEL | __GFP_ZERO));
             // printk("new allocated next_pgtbl: %016llx\n", next_pgtbl);
             l2_pgtbl[index2] = PA_PPN(virt_to_phys((void*)next_pgtbl)) << 10 | PTE_V;
         }
@@ -84,7 +84,9 @@ void riscv_iommu_remove_mapping(uint64_t *pgtbl, uint64_t va, uint64_t size) {
         if (l3_pgtbl[index3] == 0) {
             return;
         }
-        l3_pgtbl[index3] = 0;
+        // l3_pgtbl[index3] = 0;
+        // only unset the valid bit
+        l3_pgtbl[index3] &= ~PTE_V;
     }
 }
 
