@@ -38,6 +38,8 @@ static int __init riscv_iommu_init(void) {
     riscv_iommu_dct[0].fsc |= FSC_IOMMU_MODE_SV39 << 60;
     phys_pgt = virt_to_phys(riscv_iommu_pgt);
     riscv_iommu_dct[0].fsc |= phys_pgt >> 12;
+
+	riscv_iommu_create_mapping(riscv_iommu_pgt, 0x80000000, 0x80000000, 0x40000000, PTE_V | PTE_R | PTE_W | PTE_X | PTE_U);
     return 0;
 }
 

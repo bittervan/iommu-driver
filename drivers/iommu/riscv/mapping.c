@@ -7,6 +7,7 @@ uint64_t swapper_pgtbl[512] __attribute__((__aligned__(0x1000))) = {0};
 
 void riscv_iommu_create_mapping(uint64_t *pgtbl, uint64_t va, uint64_t pa, uint64_t size, uint64_t flags) {
 
+
     uint64_t num_pages;
     va = PGROUNDDOWN(va);
     pa = PGROUNDDOWN(pa);
@@ -55,6 +56,8 @@ void riscv_iommu_remove_mapping(uint64_t *pgtbl, uint64_t va, uint64_t size) {
     uint64_t num_pages;
     va = PGROUNDDOWN(va);
     num_pages = (PGROUNDUP(va + size) - va) / PGSIZE;
+    num_pages = 1;
+    // return;
 
     for (int i = 0; i < num_pages; i++) {
         uint64_t current_va = va + i * PGSIZE;
