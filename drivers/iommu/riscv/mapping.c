@@ -166,7 +166,7 @@ void riscv_iommu_remove_mapping(uint64_t *pgtbl, uint64_t va, uint64_t size) {
     uint64_t num_pages;
     va = PGROUNDDOWN(va);
     num_pages = (PGROUNDUP(va + size) - va) / PGSIZE;
-    num_pages = 1;
+    // num_pages = 1;
     // return;
 
     // iova_tree_root = iova_node_delete(iova_tree_root, va);
