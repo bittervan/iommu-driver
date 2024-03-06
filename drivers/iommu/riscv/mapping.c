@@ -83,6 +83,8 @@ void riscv_iommu_create_mapping(uint64_t *pgtbl, uint64_t va, uint64_t pa, uint6
     pa = PGROUNDDOWN(pa);
     num_pages = (PGROUNDUP(va + size) - va) / PGSIZE;
 
+    // printk("riscv_iommu_create_mapping: va: %016llx, pa: %016llx, size: %016llx, flags: %016llx\n", va, pa, size, flags);
+
     // insert the mapping into the iova hash table
     for (int i = 0; i < num_pages; i++) {
         uint64_t current_va = va + i * PGSIZE;
