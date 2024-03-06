@@ -34,6 +34,9 @@
 #define PGROUNDUP(addr) ((addr + PGSIZE - 1) & (~(PGSIZE - 1)))
 #define PGROUNDDOWN(addr) (addr & (~(PGSIZE - 1)))
 
+#define PASTART 0x80000000
+#define PASIZE  0x40000000
+
 extern char _stext[];
 extern char _etext[];
 extern char _srodata[];
