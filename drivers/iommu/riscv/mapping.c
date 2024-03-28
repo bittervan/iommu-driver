@@ -77,6 +77,7 @@ uint8_t remove_from_iova_hash_table(uint64_t iova) {
 //     return ref_cnt;
 // }
 
+
 void riscv_iommu_create_mapping(uint64_t *pgtbl, uint64_t va, uint64_t pa, uint64_t size, uint64_t flags) {
     uint64_t num_pages;
     va = PGROUNDDOWN(va);
@@ -143,6 +144,7 @@ void riscv_iommu_remove_mapping(uint64_t *pgtbl, uint64_t va, uint64_t size) {
     uint64_t num_pages;
     va = PGROUNDDOWN(va);
     num_pages = (PGROUNDUP(va + size) - va) / PGSIZE;
+
     // num_pages = 1;
     // return;
 
